@@ -7,7 +7,6 @@ package main
 
 import (
     "os"
-    "fmt"
     "log"
     "io/ioutil"
     "math/rand"
@@ -59,7 +58,7 @@ func payloadHandler(w http.ResponseWriter, r *http.Request, sessionId string) {
     if err != nil {
         log.Printf("Could not read body content: %s", err)
         http.Error(w, "Error reading request body", http.StatusInternalServerError)
-	}
+    }
 
     err = json.Unmarshal(body, CLIENT_DATA[sessionId])
     if err != nil {
@@ -73,7 +72,7 @@ func payloadHandler(w http.ResponseWriter, r *http.Request, sessionId string) {
     if err != nil {
         log.Printf("Could not unmarshal PasteEvent: %s", err)
         http.Error(w, "Internal error", http.StatusInternalServerError)
-	}
+    }
     if event.EventType == "copyAndPaste" {
         CLIENT_DATA[sessionId].CopyAndPaste[event.FormId] = event.Pasted
     }
@@ -101,7 +100,7 @@ func clientHandler(w http.ResponseWriter, r *http.Request) {
             sessionId = strconv.Itoa(rand.Intn(100))
             newCookie := http.Cookie{Name: "sessionId", Value:sessionId}
             http.SetCookie(w, &newCookie)
-            fmt.Printf("Set new sessionId: %s\n", sessionId)
+            log.Printf("Set new sessionId: %s\n", sessionId)
         } else {
             sessionId = cookie.Value
         }
