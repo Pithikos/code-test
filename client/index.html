@@ -72,5 +72,110 @@ body {
 
     </div> <!-- /container -->
 
+
+    <!--
+
+    Here is all the scripting for the task
+
+    -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+    <script>
+
+        var URL = 'http://127.0.0.1:8080';
+
+        function post_json(url, data){
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: JSON.stringify(data),
+                dataType: "json",
+                contentType: "application/json",
+                xhrFields: { // for allowing cookies
+                   withCredentials: true
+                },
+
+            });
+        }
+
+        function cookie_val(name){
+            // Regex ref: https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
+            regex = new RegExp("(?:(?:^|.*;\\s*)" + name + "\\s*\\=\\s*([^;]*).*$)|^.*$");
+            return document.cookie.replace(regex, "$1");
+        }
+
+        function dispatch_resize_event(old_w, old_h, new_w, new_h){
+            post_json(URL, {
+                "eventType": "windowResize",
+                "websiteUrl": window.location.origin,
+                "sessionId": cookie_val('sessionId'),
+                "ResizeFrom": {
+                    "Width": String(old_w),
+                    "Height": String(old_h),
+                },
+                "ResizeTo":   {
+                    "Width": String(new_w),
+                    "Height": String(new_h),
+                },
+            });
+        }
+
+        function dispatch_paste_event(element_id){
+            post_json(URL, {
+                "eventType": "copyAndPaste",
+                "websiteUrl": window.location.origin,
+                "sessionId": cookie_val('sessionId'),
+                "pasted": true,
+                "formId": element_id,
+            });
+        }
+
+        function dispatch_timetaken_event(seconds){
+            post_json(URL, {
+                "eventType": "timeTaken",
+                "websiteUrl": window.location.origin,
+                "sessionId": cookie_val('sessionId'),
+                "time": seconds,
+            });
+        }
+
+
+        // Record time elapsed from first character to submitting
+        var timestamp;
+        $(document).on('keydown', 'input', function(){
+            timestamp = timestamp || Date.now()
+        })
+
+
+        // Record window resizing events
+        var old_width = window.outerWidth;
+        var old_height = window.outerHeight;
+        var new_width;
+        var new_height;
+        window.onresize = function() {
+            new_width = window.outerWidth;
+            new_height = window.outerHeight;
+            dispatch_resize_event(old_width, old_height, new_width, new_height);
+            old_width = new_width;
+            old_height = new_height;
+        };
+
+
+        // Record pasting events
+        $("input").on('paste', function(){
+            dispatch_paste_event(this.id);
+        });
+
+
+        // Handle submitting
+        $(".form-details").submit(function(e){
+            e.preventDefault();
+            var secs_taken = Math.round((Date.now() - timestamp)/1000);
+            dispatch_timetaken_event(secs_taken);
+        })
+
+    </script>
+
   </body>
 </html>
