@@ -17,7 +17,4 @@ Visit [index.html](http://127.0.0.1:8000) in your browser.
 Post-mortem
 -----------
 
-This is my first Go program so probably some things can be done much better. Also
-I tried to follow Go conventions but it's too much for the limited time.
-
 For debugging and testing I used Wireshark, CURL, python scripts, Firebug.
